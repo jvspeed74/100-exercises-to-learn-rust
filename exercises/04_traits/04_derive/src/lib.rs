@@ -1,6 +1,3 @@
-// TODO: A (derivable) trait implementation is missing for this exercise to compile successfully.
-//   Fix it!
-//
 // # `Debug` primer
 //
 // `Debug` returns a representation of a Rust type that's suitable for debugging (hence the name).
@@ -8,11 +5,19 @@
 // print both sides of the comparison to the terminal.
 // If the compared type doesn't implement `Debug`, it doesn't know how to represent them!
 
+use std::fmt::{Debug, Formatter};
+
 #[derive(PartialEq)]
 struct Ticket {
     title: String,
     description: String,
     status: String,
+}
+
+impl Debug for Ticket {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "({}, {}, {})", self.title, self.description, self.status)
+    }
 }
 
 #[cfg(test)]
