@@ -8,7 +8,7 @@ pub fn easy_ticket(title: String, description: String, status: Status) -> Ticket
         Ok(ticket) => ticket,
         Err(err) => {
             if err.starts_with("Title") {
-                Ticket::new(title, "Description not provided".to_string(), status).unwrap()
+                panic!("{err}")
             } else {
                 Ticket::new(title, "Description not provided".to_string(), status).unwrap()
             }
