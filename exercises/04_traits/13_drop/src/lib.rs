@@ -2,6 +2,31 @@
 //  unless a certain operation has been performed on it.
 //  You can see the expected API in the tests below.
 
+// TODO: implement a so-called "Drop bomb": a type that panics when dropped
+//  unless a certain operation has been performed on it.
+//  You can see the expected API in the tests
+pub struct DropBomb {
+    go_boom_boom: bool,
+}
+
+impl DropBomb {
+    pub fn new() -> Self {
+        Self { go_boom_boom: true }
+    }
+
+    pub fn defuse(&mut self) -> () {
+        self.go_boom_boom = false
+    }
+}
+
+impl Drop for DropBomb {
+    fn drop(&mut self) {
+        if self.go_boom_boom {
+            panic!("We went boom boom")
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
