@@ -10,12 +10,46 @@
 //
 // We expect `fibonacci(0)` to return `0`, `fibonacci(1)` to return `1`,
 // `fibonacci(2)` to return `1`, and so on.
+
+fn f(n: u32, seen: &mut Vec<u32>) -> u32 {
+    // base cases
+    if n == 0 {
+        return 0;
+    }
+    if n == 1 {
+        return 1;
+    }
+
+    /*
+    I want to see if the memo vector exists.
+    Then I want to see if the indexes I need are in there.
+    Then I want to use those indexes
+    I always want to update the vec with the indexes I know
+
+    The index of memo is fib sequence index, the value is the fib number itself
+
+    literally add to the vec as you ascend so its only calculated once per iteration
+    */
+    let idx: usize = n as usize;
+
+    if seen.get(idx).is_some() {
+        seen.push(seen[idx - 1] + seen[idx - 2]);
+        seen[idx]
+    } else {
+        f(n - 1, seen) + f(n - 2, seen)
+    }
+}
+
 pub fn fibonacci(n: u32) -> u32 {
     // TODO: implement the `fibonacci` function
     //
     // Hint: use a `Vec` to memoize the results you have already calculated
     // so that you don't have to recalculate them several times.
-    todo!()
+
+    let mut memo: Vec<u32> = vec![0, 1];
+
+    // = F(n-1) + F(n-2)
+    f(n, &mut memo)
 }
 
 #[cfg(test)]
