@@ -11,7 +11,9 @@
 // We expect `fibonacci(0)` to return `0`, `fibonacci(1)` to return `1`,
 // `fibonacci(2)` to return `1`, and so on.
 
-fn f(n: u32, seen: &mut Vec<u32>) -> u32 {
+fn f(n: u32, memo: &mut Vec<Option<u32>>, calls: &mut u32) -> u32 {
+    *calls += 1;
+
     // base cases
     if n == 0 {
         return 0;
@@ -20,36 +22,26 @@ fn f(n: u32, seen: &mut Vec<u32>) -> u32 {
         return 1;
     }
 
-    /*
-    I want to see if the memo vector exists.
-    Then I want to see if the indexes I need are in there.
-    Then I want to use those indexes
-    I always want to update the vec with the indexes I know
+    // if index (n) is not in the list, calculate and add it to the list
+    // return the fib value on all paths
+    let n_as_idx: usize = n as usize;
 
-    The index of memo is fib sequence index, the value is the fib number itself
-
-    literally add to the vec as you ascend so its only calculated once per iteration
-    */
-    let idx: usize = n as usize;
-
-    if seen.get(idx).is_some() {
-        seen.push(seen[idx - 1] + seen[idx - 2]);
-        seen[idx]
-    } else {
-        f(n - 1, seen) + f(n - 2, seen)
+    if memo[n_as_idx].is_none() {
+        let first = f(n - 1, memo, calls);
+        let second = f(n - 2, memo, calls);
+        memo[n_as_idx] = Some(first + second);
     }
+
+    memo[n_as_idx].unwrap()
 }
 
 pub fn fibonacci(n: u32) -> u32 {
-    // TODO: implement the `fibonacci` function
-    //
-    // Hint: use a `Vec` to memoize the results you have already calculated
-    // so that you don't have to recalculate them several times.
-
-    let mut memo: Vec<u32> = vec![0, 1];
+    // passthrough so i dont have to refactor the lesson API to account for memo
+    let mut memo: Vec<Option<u32>> = vec![None; (n + 1) as usize];
+    let mut calls = 0u32;
 
     // = F(n-1) + F(n-2)
-    f(n, &mut memo)
+    f(n, &mut memo, &mut calls)
 }
 
 #[cfg(test)]
@@ -79,5 +71,26 @@ mod tests {
     #[test]
     fn thirtieth() {
         assert_eq!(fibonacci(30), 832040);
+    }
+
+    #[test]
+    fn memoization_bounds_call_count() {
+        // With memoization, each index 2..=n is computed exactly once, on a
+        // "miss" that spawns exactly 2 child calls (f(k-1), f(k-2)). Every
+        // other visit to that index is a "hit" that returns immediately
+        // without recursing. That gives an exact call count of 2n - 1 for
+        // n >= 1 -- linear in n, not the ~O(phi^n) naive recursion would cost.
+        //
+        // If this assertion fails while `fibonacci` still returns the right
+        // answer, the memo isn't being consulted -- it's silently falling
+        // back to full recomputation on every call.
+        let n = 30;
+        let mut memo: Vec<Option<u32>> = vec![None; (n + 1) as usize];
+        let mut calls = 0u32;
+
+        let result = crate::f(n, &mut memo, &mut calls);
+
+        assert_eq!(result, 832040);
+        assert_eq!(calls, 2 * n - 1, "expected O(n) calls for a working memo");
     }
 }
