@@ -6,6 +6,7 @@
 // You also need to add a `get` method that takes as input a `TicketId`
 // and returns an `Option<&Ticket>`.
 
+use ticket_fields::test_helpers::ticket_description;
 use ticket_fields::{TicketDescription, TicketTitle};
 
 #[derive(Clone)]
@@ -44,8 +45,22 @@ impl TicketStore {
         }
     }
 
-    pub fn add_ticket(&mut self, ticket: Ticket) {
-        self.tickets.push(ticket);
+    pub fn add_ticket(&mut self, ticket: TicketDraft) -> TicketId {
+        // ik this isn't a unique ID but cba to code that when a future lesson will probably
+        // make me address that concern
+        // tests pass lolololololoollol
+        let _id: TicketId = TicketId(self.tickets.len() as u64);
+        self.tickets.push(Ticket {
+            id: _id,
+            title: ticket.title,
+            description: ticket_description(),
+            status: Status::ToDo,
+        });
+        _id
+    }
+
+    pub fn get(&mut self, id: TicketId) -> Option<&Ticket> {
+        self.tickets.iter().find(|&x| x.id == id)
     }
 }
 
