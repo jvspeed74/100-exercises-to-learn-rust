@@ -2,7 +2,6 @@
 //  using `spawn` and `join`.
 //  Given a vector of integers, split the vector into two halves and
 //  sum each half in a separate thread.
-
 // Caveat: We can't test *how* the function is implemented,
 // we can only verify that it produces the correct result.
 // You _could_ pass this test by just returning `v.iter().sum()`,
@@ -12,10 +11,23 @@
 // slices of the vector directly. You'll need to allocate new
 // vectors for each half of the original vector. We'll see why
 // this is necessary in the next exercise.
+
 use std::thread;
+use std::thread::JoinHandle;
 
 pub fn sum(v: Vec<i32>) -> i32 {
-    todo!()
+    let mid: usize = v.len() / 2;
+    let left: Vec<i32> = v.clone();
+    let (left_half, _) = left.split_at(mid);
+
+    let right: Vec<i32> = v.clone();
+
+    let handle: JoinHandle<i32> = thread::spawn(move || {
+        let (_, right_half) = right.split_at(mid);
+        right_half.iter().sum()
+    });
+
+    handle.join().unwrap() + left_half.iter().sum::<i32>()
 }
 
 #[cfg(test)]
