@@ -1,13 +1,21 @@
+use crate::data::{Ticket, TicketDraft};
+use crate::store::{TicketId, TicketStore};
+use std::sync::mpsc::RecvError;
 use std::sync::mpsc::{Receiver, Sender};
-use crate::store::TicketStore;
 
 pub mod data;
 pub mod store;
 
 // Refer to the tests to understand the expected schema.
 pub enum Command {
-    Insert { todo!() },
-    Get { todo!() }
+    Insert {
+        draft: TicketDraft,
+        response_sender: Sender<TicketId>,
+    },
+    Get {
+        id: TicketId,
+        response_sender: Sender<Result<Ticket, RecvError>>,
+    },
 }
 
 pub fn launch() -> Sender<Command> {
@@ -21,19 +29,25 @@ pub fn server(receiver: Receiver<Command>) {
     let mut store = TicketStore::new();
     loop {
         match receiver.recv() {
-            Ok(Command::Insert {}) => {
-                todo!()
+            Ok(Command::Insert {
+                draft,
+                response_sender,
+            }) => {
+                let t = store.add_ticket(draft);
+                response_sender.send(t).expect("Unable to add TicketId");
             }
             Ok(Command::Get {
-                todo!()
+                id,
+                response_sender,
             }) => {
-                todo!()
+                let t = store.get(id).unwrap().clone();
+                response_sender.send(Ok(t)).expect("Unable to get TicketId")
             }
             Err(_) => {
                 // There are no more senders, so we can safely break
                 // and shut down the server.
-                break
-            },
+                break;
+            }
         }
     }
 }
