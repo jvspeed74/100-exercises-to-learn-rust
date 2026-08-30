@@ -4,9 +4,14 @@
 //  Hint: check out `Vec::leak`.
 
 use std::thread;
+use std::thread::JoinHandle;
 
 pub fn sum(v: Vec<i32>) -> i32 {
-    todo!()
+    let static_ref: &'static mut [i32] = v.leak();
+    let mid: usize = static_ref.len() / 2;
+    let (left, right) = static_ref.split_at(mid);
+    let handle: JoinHandle<i32> = thread::spawn(move || right.iter().sum());
+    left.iter().sum::<i32>() + handle.join().unwrap()
 }
 
 #[cfg(test)]

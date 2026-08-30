@@ -2,8 +2,22 @@
 //  and compute the sum of each half in a separate thread.
 //  Don't perform any heap allocation. Don't leak any memory.
 
+use std::thread::ScopedJoinHandle;
+
 pub fn sum(v: Vec<i32>) -> i32 {
-    todo!()
+    let mid: usize = v.len() / 2;
+
+    std::thread::scope(|s| {
+        let j1: ScopedJoinHandle<i32> = s.spawn(|| {
+            let left = &v[..mid];
+            left.iter().sum::<i32>()
+        });
+        let j2: ScopedJoinHandle<i32> = s.spawn(|| {
+            let right = &v[mid..];
+            right.iter().sum::<i32>()
+        });
+        j1.join().unwrap() + j2.join().unwrap()
+    })
 }
 
 #[cfg(test)]
