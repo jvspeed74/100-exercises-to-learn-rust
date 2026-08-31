@@ -20,6 +20,8 @@ impl TicketStore {
     }
 
     pub fn add_ticket(&mut self, ticket: TicketDraft) -> TicketId {
+        // in this context, add_ticket is ran ONLY on a single thread
+        // SO counter DOES NOT need to be locked
         let id = TicketId(self.counter);
         self.counter += 1;
         let ticket = Ticket {
@@ -28,13 +30,14 @@ impl TicketStore {
             description: ticket.description,
             status: Status::ToDo,
         };
-        todo!();
+        let arc_mutex_ticket: Arc<Mutex<Ticket>> = Arc::new(Mutex::new(ticket));
+        self.tickets.insert(id, arc_mutex_ticket);
         id
     }
 
     // The `get` method should return a handle to the ticket
     // which allows the caller to either read or modify the ticket.
-    pub fn get(&self, id: TicketId) -> Option<todo!()> {
-        todo!()
+    pub fn get(&self, id: TicketId) -> Option<Arc<Mutex<Ticket>>> {
+        Some(Arc::clone(self.tickets.get(&id).unwrap()))
     }
 }
